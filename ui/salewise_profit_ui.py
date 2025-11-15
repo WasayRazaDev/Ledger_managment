@@ -1,10 +1,13 @@
 import csv
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import landscape,A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from datetime import datetime
+
+
+
 
 from datetime import datetime
 from PyQt5.QtWidgets import (
@@ -340,12 +343,115 @@ class SaleProfitReportUI(QWidget):
 
 
 
+    # def export_to_pdf(self):
+    #     if not self.report_data:
+    #         QMessageBox.warning(self, "Warning", "No data to export. Please generate a report first.")
+    #         return
+
+    #     # Save file dialog
+    #     file_path, _ = QFileDialog.getSaveFileName(
+    #         self, "Save Report", f"Sale_Profit_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+    #         "PDF Files (*.pdf)"
+    #     )
+    #     if not file_path:
+    #         return
+
+    #     try:
+    #         doc = SimpleDocTemplate(file_path, pagesize=A4)
+    #         elements = []
+    #         styles = getSampleStyleSheet()
+
+    #         # --- Title ---
+    #         title = Paragraph("<b><font size=18>Bismillah Installment Corp</font></b>", styles['Title'])
+    #         elements.append(title)
+    #         elements.append(Spacer(1, 5))
+
+    #         subtitle = Paragraph("<b><font size=14>Sale-wise Profit & Loss Statement</font></b>", styles['Title'])
+    #         elements.append(subtitle)
+    #         elements.append(Spacer(1, 10))
+
+    #         # --- Dates row ---
+    #         start_date = self.start_date_edit.date().toString("dd/MM/yyyy")
+    #         end_date = self.end_date_edit.date().toString("dd/MM/yyyy")
+    #         report_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+    #         dates_data = [
+    #             [f"From: {start_date} To: {end_date}", f"Report Generated: {report_date}"]
+    #         ]
+    #         dates_table = Table(dates_data, colWidths=[280, 280])
+    #         dates_table.setStyle(TableStyle([
+    #             ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+    #             ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+    #             ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
+    #         ]))
+    #         elements.append(dates_table)
+    #         elements.append(Spacer(1, 10))
+
+    #         # --- Table headers ---
+    #         table_data = [
+    #             ["Title", "Cell No", "Product Name", "Quantity",
+    #             "Sale", "Purchase", "Profit", "Advance", "Balance"]
+    #         ]
+
+    #         # --- Add rows ---
+    #         total_quantity = total_sale = total_purchase = total_profit = total_advance = total_balance = 0
+    #         for row in self.report_data:
+    #             table_data.append([
+    #                 row.get("customer", ""),
+    #                 row.get("cell_no", ""),
+    #                 row.get("product_name", ""),
+    #                 row.get("quantity", 0),
+    #                 f"{float(row.get('sale_amount',0)):.2f}",
+    #                 f"{float(row.get('purchase_amount',0)):.2f}",
+    #                 f"{float(row.get('profit',0)):.2f}",
+    #                 f"{float(row.get('advance',0)):.2f}",
+    #                 f"{float(row.get('balance',0)):.2f}"
+    #             ])
+    #             total_quantity += int(row.get("quantity", 0))
+    #             total_sale += float(row.get("sale_amount", 0))
+    #             total_purchase += float(row.get("purchase_amount", 0))
+    #             total_profit += float(row.get("profit", 0))
+    #             total_advance += float(row.get("advance", 0))
+    #             total_balance += float(row.get("balance", 0))
+
+    #         # --- Add totals row ---
+    #         table_data.append([
+    #             "TOTALS", "", "", total_quantity,
+    #             f"{total_sale:.2f}",
+    #             f"{total_purchase:.2f}",
+    #             f"{total_profit:.2f}",
+    #             f"{total_advance:.2f}",
+    #             f"{total_balance:.2f}"
+    #         ])
+
+    #         # --- Create table ---
+    #         t = Table(table_data, repeatRows=1, hAlign='CENTER')
+    #         t.setStyle(TableStyle([
+    #             ('BACKGROUND', (0,0), (-1,0), colors.lightblue),
+    #             ('TEXTCOLOR',(0,0),(-1,0),colors.white),
+    #             ('ALIGN',(3,1),(-1,-1),'RIGHT'),
+    #             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+    #             ('BOTTOMPADDING', (0,0), (-1,0), 8),
+    #             ('BACKGROUND', (0,-1), (-1,-1), colors.lightgrey),
+    #             ('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold'),
+    #             ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+    #         ]))
+
+    #         elements.append(t)
+    #         doc.build(elements)
+    #         QMessageBox.information(self, "Success", f"PDF exported successfully to:\n{file_path}")
+
+    #     except Exception as e:
+    #         QMessageBox.critical(self, "Error", f"Failed to export PDF: {str(e)}")
+
+
+
+
     def export_to_pdf(self):
         if not self.report_data:
             QMessageBox.warning(self, "Warning", "No data to export. Please generate a report first.")
             return
 
-        # Save file dialog
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Save Report", f"Sale_Profit_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
             "PDF Files (*.pdf)"
@@ -354,44 +460,57 @@ class SaleProfitReportUI(QWidget):
             return
 
         try:
-            doc = SimpleDocTemplate(file_path, pagesize=A4)
+            # VERY SMALL MARGINS TO CONSUME PAGE SPACE
+            doc = SimpleDocTemplate(
+                file_path,
+                pagesize=landscape(A4),
+                leftMargin=6,
+                rightMargin=6,
+                topMargin=8,
+                bottomMargin=8
+            )
+
             elements = []
             styles = getSampleStyleSheet()
 
-            # --- Title ---
-            title = Paragraph("<b><font size=18>Bismillah Installment Corp</font></b>", styles['Title'])
+            # Titles (compact)
+            title = Paragraph("<b><font size=16>Bismillah Installment Corp</font></b>", styles['Title'])
             elements.append(title)
-            elements.append(Spacer(1, 5))
 
-            subtitle = Paragraph("<b><font size=14>Sale-wise Profit & Loss Statement</font></b>", styles['Title'])
+            subtitle = Paragraph("<b><font size=12>Sale-wise Profit & Loss Statement</font></b>", styles['Title'])
             elements.append(subtitle)
-            elements.append(Spacer(1, 10))
 
-            # --- Dates row ---
+            elements.append(Spacer(1, 4))
+
+            # Dates row
             start_date = self.start_date_edit.date().toString("dd/MM/yyyy")
             end_date = self.end_date_edit.date().toString("dd/MM/yyyy")
             report_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
             dates_data = [
-                [f"From: {start_date} To: {end_date}", f"Report Generated: {report_date}"]
+                [f"From: {start_date}  –  {end_date}", f"Report Generated: {report_date}"]
             ]
-            dates_table = Table(dates_data, colWidths=[280, 280])
-            dates_table.setStyle(TableStyle([
-                ('ALIGN', (0, 0), (0, 0), 'LEFT'),
-                ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
-                ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
-            ]))
-            elements.append(dates_table)
-            elements.append(Spacer(1, 10))
 
-            # --- Table headers ---
+            dates_table = Table(dates_data, colWidths=[360, 360])
+            dates_table.setStyle(TableStyle([
+                ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
+                ('FONTSIZE', (0,0), (-1,-1), 9),
+                ('ALIGN', (0,0), (0,0), 'LEFT'),
+                ('ALIGN', (1,0), (1,0), 'RIGHT'),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+            ]))
+
+            elements.append(dates_table)
+            elements.append(Spacer(1, 6))
+
+            # TABLE HEADER + ROWS
             table_data = [
-                ["Title", "Cell No", "Product Name", "Quantity",
+                ["Title", "Cell No", "Product", "Qty",
                 "Sale", "Purchase", "Profit", "Advance", "Balance"]
             ]
 
-            # --- Add rows ---
             total_quantity = total_sale = total_purchase = total_profit = total_advance = total_balance = 0
+
             for row in self.report_data:
                 table_data.append([
                     row.get("customer", ""),
@@ -404,6 +523,7 @@ class SaleProfitReportUI(QWidget):
                     f"{float(row.get('advance',0)):.2f}",
                     f"{float(row.get('balance',0)):.2f}"
                 ])
+
                 total_quantity += int(row.get("quantity", 0))
                 total_sale += float(row.get("sale_amount", 0))
                 total_purchase += float(row.get("purchase_amount", 0))
@@ -411,30 +531,46 @@ class SaleProfitReportUI(QWidget):
                 total_advance += float(row.get("advance", 0))
                 total_balance += float(row.get("balance", 0))
 
-            # --- Add totals row ---
             table_data.append([
                 "TOTALS", "", "", total_quantity,
-                f"{total_sale:.2f}",
-                f"{total_purchase:.2f}",
-                f"{total_profit:.2f}",
-                f"{total_advance:.2f}",
+                f"{total_sale:.2f}", f"{total_purchase:.2f}",
+                f"{total_profit:.2f}", f"{total_advance:.2f}",
                 f"{total_balance:.2f}"
             ])
 
-            # --- Create table ---
-            t = Table(table_data, repeatRows=1, hAlign='CENTER')
+            # FULL-WIDTH TABLE (FILL PAGE)
+            full_width = 720  # landscape A4 width minus margins
+
+            col_widths = [
+                full_width * 0.18,  # Title
+                full_width * 0.10,  # Cell
+                full_width * 0.20,  # Product
+                full_width * 0.06,  # Qty
+                full_width * 0.11,  # Sale
+                full_width * 0.11,  # Purchase
+                full_width * 0.10,  # Profit
+                full_width * 0.07,  # Advance
+                full_width * 0.07   # Balance
+            ]
+
+            t = Table(table_data, colWidths=col_widths, repeatRows=1)
+
             t.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,0), colors.lightblue),
-                ('TEXTCOLOR',(0,0),(-1,0),colors.white),
-                ('ALIGN',(3,1),(-1,-1),'RIGHT'),
+                ('BACKGROUND', (0,0), (-1,0), colors.darkblue),
+                ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
                 ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-                ('BOTTOMPADDING', (0,0), (-1,0), 8),
+                ('FONTSIZE', (0,0), (-1,0), 8),
+                ('FONTSIZE', (0,1), (-1,-1), 7),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+                ('TOPPADDING', (0,0), (-1,-1), 2),
                 ('BACKGROUND', (0,-1), (-1,-1), colors.lightgrey),
-                ('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold'),
-                ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+                ('GRID', (0,0), (-1,-1), 0.25, colors.black),
             ]))
 
             elements.append(t)
+
             doc.build(elements)
             QMessageBox.information(self, "Success", f"PDF exported successfully to:\n{file_path}")
 
