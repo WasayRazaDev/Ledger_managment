@@ -123,7 +123,17 @@ class AgingReceivablesReport(QWidget):
             "Account Code", "Title", "Cell", "Amount", 
             "Date", "Days", "Balance", "Voucher Type"
         ])
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+                # Set column widths for better spacing
+        self.table.setColumnWidth(0, 100)   # Account_code
+        self.table.setColumnWidth(1, 355)   # Title
+        self.table.setColumnWidth(2, 120)   # Cell
+        self.table.setColumnWidth(3, 100)   # Amount
+        self.table.setColumnWidth(4, 100)  # Date
+        self.table.setColumnWidth(5, 100)  # Days
+        self.table.setColumnWidth(6, 110)  # Balance
+        self.table.setColumnWidth(7, 120)  # Voucher Type
+        # self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         layout.addWidget(self.table)
 
         # Load data
