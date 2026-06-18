@@ -740,10 +740,28 @@ class LedgerPopup(QDialog):
         
         if path:
             try:
+                account = AccountRepo.get_account_by_code(self.account_code)
+                
                 with open(path, mode="w", newline="", encoding="utf-8") as file:
                     writer = csv.writer(file)
                     
-                    # Write headers
+                    # Header rows
+                    writer.writerow(["Bismillah Installment Corporation"])
+                    if account:
+                        writer.writerow([
+                            f"Account Code: {account.account_code}",
+                            f"Name: {account.title}",
+                            f"Unit: {account.unit}",
+                            f"Account Type: {account.account_type}"
+                        ])
+                    writer.writerow([
+                        f"Period: {self.from_date.date().toString('dd-MM-yyyy')} to {self.to_date.date().toString('dd-MM-yyyy')}"
+                    ])
+                    writer.writerow([f"Generated: {QDate.currentDate().toString('dd-MM-yyyy')}"])
+                    writer.writerow([f"Total Records: {len(self.all_entries):,}"])
+                    writer.writerow([])
+
+                    # Write column headers
                     headers = ["Date", "Account Code", "Voucher Type", "Voucher ID", 
                               "Description", "Debit", "Credit", "Balance"]
                     writer.writerow(headers)
@@ -755,7 +773,7 @@ class LedgerPopup(QDialog):
                             date_str = date_val.strftime("%d-%m-%Y")
                         else:
                             date_str = str(date_val or "")
-                            
+
                         row_data = [
                             date_str,
                             entry.get("account_code", ""),
@@ -777,6 +795,10 @@ class LedgerPopup(QDialog):
 
     def print_ledger(self):
         """Send the ledger to printer (or PDF if user chooses)"""
+        if not self.all_entries:
+            QMessageBox.warning(self, "No Data", "No ledger entries to print.")
+            return
+            
         try:
             printer = QPrinter(QPrinter.HighResolution)
             printer.setPageSize(QPrinter.A4)
@@ -786,8 +808,132 @@ class LedgerPopup(QDialog):
             dialog.setWindowTitle("Print Ledger")
             
             if dialog.exec_() == QPrintDialog.Accepted:
+                # Actually render the content to the printer
+                self._render_ledger_to_printer(printer)
                 QMessageBox.information(self, "Print", 
                     f"Ledger sent to printer successfully.\n"
                     f"Printing {len(self.all_entries):,} records.")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to print: {str(e)}")
+
+
+    def _render_ledger_to_printer(self, printer):
+        """Render the ledger data to printer/PDF"""
+        from PyQt5.QtGui import QTextDocument, QTextCursor, QTextTableFormat
+        from PyQt5.QtGui import QTextCharFormat, QFont, QTextBlockFormat
+        from PyQt5.QtCore import Qt
+        
+        doc = QTextDocument()
+        cursor = QTextCursor(doc)
+        
+        # === BEAUTIFIED HEADER ===
+        
+        # Company Name
+        company_fmt = QTextCharFormat()
+        company_fmt.setFont(QFont("Arial", 16, QFont.Bold))
+        company_fmt.setForeground(QColor(0, 51, 102))  # Dark blue
+        
+        block_fmt = QTextBlockFormat()
+        block_fmt.setAlignment(Qt.AlignCenter)
+        cursor.setBlockFormat(block_fmt)
+        cursor.insertText("BISMILLAH INSTALLMENT CORPORATION\n", company_fmt)
+        
+        # Tagline/Subtitle
+        tagline_fmt = QTextCharFormat()
+        tagline_fmt.setFont(QFont("Arial", 9, QFont.StyleItalic))
+        tagline_fmt.setForeground(QColor(100, 100, 100))
+        cursor.insertText("Financial Management System\n", tagline_fmt)
+        
+        # Divider line
+        cursor.insertText("━" * 80 + "\n")
+        
+        # Report Title
+        title_fmt = QTextCharFormat()
+        title_fmt.setFont(QFont("Arial", 13, QFont.Bold))
+        title_fmt.setForeground(QColor(0, 51, 102))
+        cursor.insertText("LEDGER REPORT\n\n", title_fmt)
+        
+        # Account Details Section - Left align
+        account = AccountRepo.get_account_by_code(self.account_code)
+        
+        details_fmt = QTextCharFormat()
+        details_fmt.setFont(QFont("Arial", 10))
+        
+        block_fmt_left = QTextBlockFormat()
+        block_fmt_left.setAlignment(Qt.AlignLeft)
+        cursor.setBlockFormat(block_fmt_left)
+        
+        if account:
+            cursor.insertText(f"Account Code: {account.account_code} | ", details_fmt)
+            cursor.insertText(f"Name: {account.title}\n", details_fmt)
+            cursor.insertText(f"Unit: {account.unit} | ", details_fmt)
+            cursor.insertText(f"Type: {account.account_type}\n\n", details_fmt)
+        
+        # Date Range and Print Info
+        info_fmt = QTextCharFormat()
+        info_fmt.setFont(QFont("Arial", 9))
+        info_fmt.setForeground(QColor(80, 80, 80))
+        
+        cursor.insertText(f"Period: {self.from_date.date().toString('dd-MM-yyyy')} to {self.to_date.date().toString('dd-MM-yyyy')} | ", info_fmt)
+        cursor.insertText(f"Generated: {QDate.currentDate().toString('dd-MM-yyyy')} | ", info_fmt)
+        cursor.insertText(f"Total Records: {len(self.all_entries):,}\n", info_fmt)
+        
+        cursor.insertText("━" * 80 + "\n\n", info_fmt)
+        
+        # === TABLE ===
+        
+        # Create table with headers
+        table_format = QTextTableFormat()
+        table_format.setCellPadding(6)
+        table_format.setCellSpacing(0)
+        table_format.setBorder(1)
+        
+        # +1 for header row
+        table = cursor.insertTable(len(self.all_entries) + 1, 8, table_format)
+        
+        # Add column headers with background color
+        headers = ["Date", "Account Code", "Voucher Type", "Voucher ID", "Description", "Debit", "Credit", "Balance"]
+        header_fmt = QTextCharFormat()
+        header_fmt.setFont(QFont("Arial", 10, QFont.Bold))
+        
+        for col, header in enumerate(headers):
+            cell = table.cellAt(0, col)
+            cell_cursor = cell.firstCursorPosition()
+            cell_cursor.insertText(header, header_fmt)
+        
+        # Add data rows
+        data_fmt = QTextCharFormat()
+        data_fmt.setFont(QFont("Arial", 9))
+        
+        for row, entry in enumerate(self.all_entries, start=1):
+            date_val = entry.get("date", "")
+            if hasattr(date_val, "strftime"):
+                date_str = date_val.strftime("%d-%m-%Y")
+            else:
+                date_str = str(date_val or "")
+            
+            row_data = [
+                date_str,
+                str(entry.get("account_code", "")),
+                str(entry.get("voucher_type", "")),
+                str(entry.get("voucher_id", "")),
+                str(entry.get("description", "")),
+                f"{float(entry.get('debit', 0)):,.2f}",
+                f"{float(entry.get('credit', 0)):,.2f}",
+                f"{float(entry.get('balance', 0)):,.2f}"
+            ]
+            
+            for col, data in enumerate(row_data):
+                cell = table.cellAt(row, col)
+                cell_cursor = cell.firstCursorPosition()
+                
+                # Right align numeric columns
+                if col in [5, 6, 7]:  # Debit, Credit, Balance
+                    cell_block_fmt = QTextBlockFormat()
+                    cell_block_fmt.setAlignment(Qt.AlignRight)
+                    cell_cursor.setBlockFormat(cell_block_fmt)
+                
+                cell_cursor.insertText(data, data_fmt)
+        
+        # Print the document
+        doc.print(printer)

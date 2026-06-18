@@ -120,7 +120,7 @@ class SaleProfitReportUI(QWidget):
         header_layout.setAlignment(Qt.AlignCenter)
         
         # Main heading
-        main_heading = QLabel("Bismillah Installment Corp")
+        main_heading = QLabel("Ammar Traders")
         main_heading.setAlignment(Qt.AlignCenter)
         main_heading.setStyleSheet("font-size: 24pt; font-weight: bold; margin: 10px;")
         header_layout.addWidget(main_heading)
@@ -286,7 +286,7 @@ class SaleProfitReportUI(QWidget):
                 writer = csv.writer(csvfile)
                 
                 # Write header information
-                writer.writerow(["Bismillah Installment Corp"])
+                writer.writerow(["Ammar Traders"])
                 writer.writerow(["Sale-wise Profit & Loss Statement"])
                 writer.writerow([])  # Empty row
                 
@@ -474,7 +474,7 @@ class SaleProfitReportUI(QWidget):
             styles = getSampleStyleSheet()
 
             # Titles (compact)
-            title = Paragraph("<b><font size=16>Bismillah Installment Corp</font></b>", styles['Title'])
+            title = Paragraph("<b><font size=16>Ammar Traders </font></b>", styles['Title'])
             elements.append(title)
 
             subtitle = Paragraph("<b><font size=12>Sale-wise Profit & Loss Statement</font></b>", styles['Title'])
@@ -542,15 +542,15 @@ class SaleProfitReportUI(QWidget):
             full_width = 720  # landscape A4 width minus margins
 
             col_widths = [
-                full_width * 0.18,  # Title
+                full_width * 0.27,  # Title
                 full_width * 0.10,  # Cell
-                full_width * 0.20,  # Product
-                full_width * 0.06,  # Qty
+                full_width * 0.13,  # Product
+                full_width * 0.04,  # Qty
                 full_width * 0.11,  # Sale
                 full_width * 0.11,  # Purchase
                 full_width * 0.10,  # Profit
-                full_width * 0.07,  # Advance
-                full_width * 0.07   # Balance
+                full_width * 0.08,  # Advance
+                full_width * 0.08   # Balance
             ]
 
             t = Table(table_data, colWidths=col_widths, repeatRows=1)
@@ -558,7 +558,7 @@ class SaleProfitReportUI(QWidget):
             t.setStyle(TableStyle([
                 ('BACKGROUND', (0,0), (-1,0), colors.darkblue),
                 ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('ALIGN', (0,0), (-1,-1), 'LEFT'),
                 ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
                 ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
                 ('FONTSIZE', (0,0), (-1,0), 8),
