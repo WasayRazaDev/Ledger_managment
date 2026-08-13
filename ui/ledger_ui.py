@@ -151,6 +151,7 @@ class LedgerUI(QDialog):
         self.status_filter = QComboBox()
         self.status_filter.addItem("All")
         self.status_filter.addItems(["ACTIVE", "INACTIVE"])
+        self.status_filter.setCurrentText("ACTIVE")
         filter_layout.addWidget(self.status_filter)
 
         layout.addWidget(filter_group)
